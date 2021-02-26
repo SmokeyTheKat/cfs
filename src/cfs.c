@@ -44,6 +44,17 @@ ddString package_generate_command(struct package pkg, char* comm_list[10], int i
 	return output;
 }
 
+void package_remove(struct package pkg)
+{
+	for (int i = 0; i < package_get_com_list_length(pkg.remove_commands); i++)
+	{
+		ddString command = package_generate_command(pkg, pkg.remove_commands, i);
+		ddPrints(command.cstr);
+		ddPrint_nl();
+		system(command.cstr);
+		raze_ddString(&command);
+	}
+}
 void package_download(struct package pkg)
 {
 	for (int i = 0; i < package_get_com_list_length(pkg.download_commands); i++)
@@ -81,6 +92,21 @@ int main(int argc, char** argv)
 		struct package pkg = package_get_value(args_get_value(make_constant_ddString("-i")));
 		package_download(pkg);
 		package_compile(pkg);
+	}
+	else if (args_if_def(make_constant_ddString("-d")))
+	{
+		struct package pkg = package_get_value(args_get_value(make_constant_ddString("-d")));
+		package_download(pkg);
+	}
+	else if (args_if_def(make_constant_ddString("-c")))
+	{
+		struct package pkg = package_get_value(args_get_value(make_constant_ddString("-c")));
+		package_compile(pkg);
+	}
+	else if (args_if_def(make_constant_ddString("-r")))
+	{
+		struct package pkg = package_get_value(args_get_value(make_constant_ddString("-r")));
+		package_remove(pkg);
 	}
 	return 0;
 }

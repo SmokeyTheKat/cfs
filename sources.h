@@ -14,7 +14,48 @@ struct package packages[] = {
 		{
 			"cd %p%n && make && sudo make install",
 			0, 0, 0, 0, 0, 0, 0, 0, 0
+		},
+		{
+			"cd %p%n && make uninstall",
+			"sudo rm -rf %p%n",
+			0, 0, 0, 0, 0, 0, 0, 0
 		}
+	},
+	{ 
+		"tty-snake", 
+		{
+			"mkdir %p%n",
+			"git clone https://github.com/smokeythekat/tty-snake %p%n",
+			0, 0, 0, 0, 0, 0, 0, 0
+		},
+		{
+			"cd %p%n && make && sudo make install",
+			0, 0, 0, 0, 0, 0, 0, 0, 0
+		},
+		{
+			"sudo rm /usr/bin/tty-snake",
+			"sudo rm -rf %p%n",
+			0, 0, 0, 0, 0, 0, 0, 0
+		}
+
+	},
+	{ 
+		"tty-pong", 
+		{
+			"mkdir %p%n",
+			"git clone https://github.com/smokeythekat/tty-pong %p%n",
+			0, 0, 0, 0, 0, 0, 0, 0
+		},
+		{
+			"cd %p%n && make && sudo make install",
+			0, 0, 0, 0, 0, 0, 0, 0, 0
+		},
+		{
+			"sudo rm /usr/bin/tty-pong",
+			"sudo rm -rf %p%n",
+			0, 0, 0, 0, 0, 0, 0, 0
+		}
+
 	},
 };
 
