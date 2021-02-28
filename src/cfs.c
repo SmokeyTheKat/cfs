@@ -107,7 +107,7 @@ int main(int argc, char** argv)
 	{
 		for (int i = 0; i < sizeof(sources)/sizeof(char*); i++)
 		{
-			printf("\n\nSOURCE %s\n", sources[i]);
+			printf("SOURCE %s\n", sources[i]);
 
 			FILE *fp;
 			char path[1035];
@@ -129,7 +129,7 @@ int main(int argc, char** argv)
 			{
 				if (args_if_def(make_constant_ddString("-la"))) ddPrints(path);
 				if (cstring_compare_length("pkg:", path, 4))
-					printf(path);
+					printf(path+4);
 			}
 			pclose(fp);
 		}
