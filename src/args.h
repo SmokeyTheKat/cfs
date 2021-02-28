@@ -43,6 +43,14 @@ void read_args(int argc, char** argv)
 			ddPrint_cstring("docs: http://ddmo.xyz/projects/cfs/\n");
 			exit(0);
 		}
+		else if (ddString_compare_cstring(dsarg, "-la"))
+		{
+			cargs[cargsCount++].name = dsarg;
+		}
+		else if (ddString_compare_cstring(dsarg, "-l"))
+		{
+			cargs[cargsCount++].name = dsarg;
+		}
 		else if (ddString_compare_cstring(dsarg, "-i"))
 		{
 			cargs[cargsCount].name = dsarg;

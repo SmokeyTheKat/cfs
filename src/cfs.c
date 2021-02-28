@@ -18,12 +18,15 @@ int package_get_com_list_length(char* command_list[10])
 
 ddString package_generate_command(struct package pkg, char* comm_list[10], int index)
 {
+	ddPrints("start\n");
 	const char* com = comm_list[index];
-	ddString output = make_ddString("");
+	ddString output = make_ddString_capacity("", 100);
 	long length;
 	cstring_get_length(com, &length);
+	ddPrints("FSKFJSLDKJF\n");
 	for (int i = 0; i < length; i++)
 	{
+		ddPrint_char(com[i]);
 		switch (com[i])
 		{
 			case '%':
@@ -44,6 +47,7 @@ ddString package_generate_command(struct package pkg, char* comm_list[10], int i
 			default: ddString_push_char_back(&output, com[i]);
 		}
 	}
+	ddPrintf(output.cstr);
 	return output;
 }
 
@@ -98,13 +102,46 @@ int main(int argc, char** argv)
 {
 	read_args(argc, argv);
 
+	if (args_if_def(make_constant_ddString("-l")) ||
+		args_if_def(make_constant_ddString("-la")))
+	{
+		for (int i = 0; i < sizeof(sources)/sizeof(char*); i++)
+		{
+			printf("\n\nSOURCE %s\n", sources[i]);
+
+			FILE *fp;
+			char path[1035];
+
+			ddString command = make_format_ddString("curl -sS %s", sources[i]);
+
+			fp = popen(command.cstr, "r");
+
+			raze_ddString(&command);
+
+			if (fp == NULL)
+			{
+				printf("Failed to run command\n" );
+				exit(1);
+			}
+
+
+			while (fgets(path, sizeof(path), fp) != NULL)
+			{
+				if (args_if_def(make_constant_ddString("-la"))) ddPrints(path);
+				if (cstring_compare_length("pkg:", path, 4))
+					printf(path);
+			}
+			pclose(fp);
+		}
+		exit(1);
+	}
 
 	for (int i = 0; i < sizeof(sources)/sizeof(char*); i++)
 	{
 		FILE *fp;
 		char path[1035];
 
-		ddString command = make_format_ddString("curl %s", sources[i]);
+		ddString command = make_format_ddString("curl -sS %s", sources[i]);
 
 		fp = popen(command.cstr, "r");
 
