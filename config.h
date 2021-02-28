@@ -1,4 +1,5 @@
 const char programs_path[] = "/home/william/Programs/";
 const char* sources[] = {
-	"http://ddmo.rf.gd/cfs/repos/main",
+	"ddmo.xyz/projects/cfs/repos/common.txt",
+	"ddmo.xyz/projects/cfs/repos/smokey.txt",
 };

@@ -15,6 +15,18 @@ long cargsCount = 0;
 
 void read_args(int argc, char** argv)
 {
+	if (argc == 1)
+	{
+		ddPrint_cstring("cfs\n");
+		ddPrint_cstring("usage: cfs [OPTIONS...] name\n");
+		ddPrint_cstring("options:\n");
+		ddPrint_cstring("	-i			install package\n");
+		ddPrint_cstring("	-c			compile/recompile package\n");
+		ddPrint_cstring("	-d			dowload package\n");
+		ddPrint_cstring("	-r			remove package\n");
+		ddPrint_cstring("docs: http://ddmo.xyz/projects/cfs/\n");
+		exit(0);
+	}
 	cargs = make(struct compilerArgs, 1000);
 	for (int i = 1; i < argc; i++)
 	{
@@ -28,7 +40,7 @@ void read_args(int argc, char** argv)
 			ddPrint_cstring("	-c			compile/recompile package\n");
 			ddPrint_cstring("	-d			dowload package\n");
 			ddPrint_cstring("	-r			remove package\n");
-			ddPrint_cstring("docs: https://ddmo.rf.gd/cfs/\n");
+			ddPrint_cstring("docs: http://ddmo.xyz/projects/cfs/\n");
 			exit(0);
 		}
 		else if (ddString_compare_cstring(dsarg, "-i"))
