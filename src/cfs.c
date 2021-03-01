@@ -18,12 +18,10 @@ int package_get_com_list_length(char* command_list[10])
 
 ddString package_generate_command(struct package pkg, char* comm_list[10], int index)
 {
-	ddPrints("start\n");
 	const char* com = comm_list[index];
 	ddString output = make_ddString_capacity("", 100);
 	long length;
 	cstring_get_length(com, &length);
-	ddPrints("FSKFJSLDKJF\n");
 	for (int i = 0; i < length; i++)
 	{
 		ddPrint_char(com[i]);
@@ -47,7 +45,6 @@ ddString package_generate_command(struct package pkg, char* comm_list[10], int i
 			default: ddString_push_char_back(&output, com[i]);
 		}
 	}
-	ddPrintf(output.cstr);
 	return output;
 }
 
@@ -56,8 +53,6 @@ void package_remove(struct package pkg)
 	for (int i = 0; i < pkg.remove_count; i++)
 	{
 		ddString command = package_generate_command(pkg, pkg.remove_commands, i);
-		ddPrints(command.cstr);
-		ddPrint_nl();
 		system(command.cstr);
 		raze_ddString(&command);
 	}
@@ -67,8 +62,6 @@ void package_download(struct package pkg)
 	for (int i = 0; i < pkg.download_count; i++)
 	{
 		ddString command = package_generate_command(pkg, pkg.download_commands, i);
-		ddPrints(command.cstr);
-		ddPrint_nl();
 		system(command.cstr);
 		raze_ddString(&command);
 	}
@@ -78,8 +71,6 @@ void package_compile(struct package pkg)
 	for (int i = 0; i < pkg.compile_count; i++)
 	{
 		ddString command = package_generate_command(pkg, pkg.compile_commands, i);
-		ddPrints(command.cstr);
-		ddPrint_nl();
 		system(command.cstr);
 		raze_ddString(&command);
 	}
