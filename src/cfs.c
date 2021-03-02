@@ -3,11 +3,29 @@
 #include <ddcPrint.h>
 
 #include "./utils.h"
-#include "./args.h"
 #include "../config.h"
 
 struct package pkgs[100];
 long pkg_count = -1;
+
+void print_help(void)
+{
+	ddPrintf("HELP\n");
+}
+
+struct package get_package(ddString name)
+{
+	for (int i = 0; i < pkg_count; i++)
+	{
+		if (cstring_compare(name.cstr, pkgs[i].name))
+		{
+			return pkgs[i];
+		}
+	}
+	ddPrintf("ERROR PACKAGE NOT FOUND\n");
+	exit(1);
+}
+
 
 int package_get_com_list_length(char* command_list[10])
 {
@@ -48,84 +66,76 @@ ddString package_generate_command(struct package pkg, char* comm_list[10], int i
 	return output;
 }
 
-void package_remove(struct package pkg)
+void package_remove(int argc, char** argv)
 {
-	for (int i = 0; i < pkg.remove_count; i++)
+	for (int i = 2; i < argc; i++)
 	{
-		ddString command = package_generate_command(pkg, pkg.remove_commands, i);
-		system(command.cstr);
-		raze_ddString(&command);
-	}
-}
-void package_download(struct package pkg)
-{
-	for (int i = 0; i < pkg.download_count; i++)
-	{
-		ddString command = package_generate_command(pkg, pkg.download_commands, i);
-		system(command.cstr);
-		raze_ddString(&command);
-	}
-}
-void package_compile(struct package pkg)
-{
-	for (int i = 0; i < pkg.compile_count; i++)
-	{
-		ddString command = package_generate_command(pkg, pkg.compile_commands, i);
-		system(command.cstr);
-		raze_ddString(&command);
-	}
-}
-
-struct package package_get_value(ddString name)
-{
-	for (int i = 0; i < pkg_count; i++)
-	{
-		if (cstring_compare(name.cstr, pkgs[i].name))
+		struct package pkg = get_package(make_constant_ddString(argv[i]));
+		for (int j = 0; j < pkg.remove_count; j++)
 		{
-			return pkgs[i];
+			ddString command = package_generate_command(pkg, pkg.remove_commands, j);
+			system(command.cstr);
+			raze_ddString(&command);
 		}
 	}
-	ddPrintf("ERROR PACKAGE NOT FOUND\n");
-	exit(1);
+}
+void package_update(int argc, char** argv)
+{
+	for (int i = 2; i < argc; i++)
+	{
+		struct package pkg = get_package(make_constant_ddString(argv[i]));
+		for (int j = 0; j < pkg.update_count; j++)
+		{
+			ddString command = package_generate_command(pkg, pkg.update_commands, j);
+			system(command.cstr);
+			raze_ddString(&command);
+		}
+	}
+}
+void package_download(int argc, char** argv)
+{
+	for (int i = 2; i < argc; i++)
+	{
+		struct package pkg = get_package(make_constant_ddString(argv[i]));
+		for (int j = 0; j < pkg.download_count; j++)
+		{
+			ddString command = package_generate_command(pkg, pkg.download_commands, j);
+			system(command.cstr);
+			raze_ddString(&command);
+		}
+	}
+}
+void package_compile(int argc, char** argv)
+{
+	for (int i = 2; i < argc; i++)
+	{
+		struct package pkg = get_package(make_constant_ddString(argv[i]));
+		for (int j = 0; j < pkg.compile_count; j++)
+		{
+			ddString command = package_generate_command(pkg, pkg.compile_commands, j);
+			system(command.cstr);
+			raze_ddString(&command);
+		}
+	}
 }
 
 int main(int argc, char** argv)
 {
-	read_args(argc, argv);
-
-	if (args_if_def(make_constant_ddString("-l")) ||
-		args_if_def(make_constant_ddString("-la")))
+	if (argc == 1)
 	{
-		for (int i = 0; i < sizeof(sources)/sizeof(char*); i++)
-		{
-			printf("SOURCE %s\n", sources[i]);
-
-			FILE *fp;
-			char path[1035];
-
-			ddString command = make_format_ddString("curl -sS %s", sources[i]);
-
-			fp = popen(command.cstr, "r");
-
-			raze_ddString(&command);
-
-			if (fp == NULL)
-			{
-				printf("Failed to run command\n" );
-				exit(1);
-			}
-
-
-			while (fgets(path, sizeof(path), fp) != NULL)
-			{
-				if (args_if_def(make_constant_ddString("-la"))) ddPrints(path);
-				if (cstring_compare_length("pkg:", path, 4))
-					printf(path+4);
-			}
-			pclose(fp);
-		}
-		exit(1);
+		print_help();
+		exit(0);
 	}
+	if (argc == 2 && (cstring_compare(argv[1], "--help") ||
+			  cstring_compare(argv[1], "-help")))
+	{
+		print_help();
+		exit(0);
+	}
+
+	char* comms = argv[1]+1;
+	long commslen;
+	cstring_get_length(comms, &commslen);
 
 	for (int i = 0; i < sizeof(sources)/sizeof(char*); i++)
 	{
@@ -162,6 +172,13 @@ int main(int argc, char** argv)
 				pkgs[pkg_count].compile_commands[pkgs[pkg_count].compile_count++] = v.cstr;
 				//ddPrints(pkgs[pkg_count].compile_commands[pkgs[pkg_count].compile_count-1]);
 			}
+			else if (cstring_compare_length("up:", path, 3))
+			{
+				ddString v = make_ddString(path+3);
+				v.cstr[v.length-1] = 0;
+				pkgs[pkg_count].update_commands[pkgs[pkg_count].update_count++] = v.cstr;
+				//ddPrints(pkgs[pkg_count].download_commands[pkgs[pkg_count].download_count-1]);
+			}
 			else if (cstring_compare_length("dwl:", path, 4))
 			{
 				ddString v = make_ddString(path+4);
@@ -181,26 +198,37 @@ int main(int argc, char** argv)
 	}
 	pkg_count++;
 
-	if (args_if_def(make_constant_ddString("-i")))
+	for (int j = 0; j < commslen; j++)
 	{
-		struct package pkg = package_get_value(args_get_value(make_constant_ddString("-i")));
-		package_download(pkg);
-		package_compile(pkg);
-	}
-	else if (args_if_def(make_constant_ddString("-d")))
-	{
-		struct package pkg = package_get_value(args_get_value(make_constant_ddString("-d")));
-		package_download(pkg);
-	}
-	else if (args_if_def(make_constant_ddString("-c")))
-	{
-		struct package pkg = package_get_value(args_get_value(make_constant_ddString("-c")));
-		package_compile(pkg);
-	}
-	else if (args_if_def(make_constant_ddString("-r")))
-	{
-		struct package pkg = package_get_value(args_get_value(make_constant_ddString("-r")));
-		package_remove(pkg);
+		if (comms[j] == 'i')
+		{
+			package_download(argc, argv);
+			package_compile(argc, argv);
+		}
+		else if (comms[j] == 'd')
+		{
+			package_download(argc, argv);
+		}
+		else if (comms[j] == 'u')
+		{
+			package_update(argc, argv);
+			package_compile(argc, argv);
+		}
+		else if (comms[j] == 'c')
+		{
+			package_compile(argc, argv);
+		}
+		else if (comms[j] == 'r')
+		{
+			package_remove(argc, argv);
+		}
+		else if (comms[j] == 'l')
+		{
+			for (int k = 0; k < pkg_count; k++)
+			{
+				printf("%s\n", pkgs[k].name);
+			}
+		}
 	}
 	return 0;
 }
