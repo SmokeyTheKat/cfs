@@ -119,24 +119,8 @@ void package_compile(int argc, char** argv)
 	}
 }
 
-int main(int argc, char** argv)
+void fetch_packages(void)
 {
-	if (argc == 1)
-	{
-		print_help();
-		exit(0);
-	}
-	if (argc == 2 && (cstring_compare(argv[1], "--help") ||
-			  cstring_compare(argv[1], "-help")))
-	{
-		print_help();
-		exit(0);
-	}
-
-	char* comms = argv[1]+1;
-	long commslen;
-	cstring_get_length(comms, &commslen);
-
 	for (int i = 0; i < sizeof(sources)/sizeof(char*); i++)
 	{
 		FILE *fp;
@@ -197,9 +181,33 @@ int main(int argc, char** argv)
 		pclose(fp);
 	}
 	pkg_count++;
+}
+
+int main(int argc, char** argv)
+{
+	if (argc == 1)
+	{
+		print_help();
+		exit(0);
+	}
+	if (argc == 2 && (cstring_compare(argv[1], "--help") ||
+			  cstring_compare(argv[1], "-help")))
+	{
+		print_help();
+		exit(0);
+	}
+
+	char* comms = argv[1]+1;
+	long commslen;
+	cstring_get_length(comms, &commslen);
+
 
 	for (int j = 0; j < commslen; j++)
 	{
+		if (comms[j] == 'f')
+		{
+			fetch_packages();
+		}
 		if (comms[j] == 'i')
 		{
 			package_download(argc, argv);
@@ -228,6 +236,11 @@ int main(int argc, char** argv)
 			{
 				printf("%s\n", pkgs[k].name);
 			}
+		}
+		else if (comms[j] == 'h')
+		{
+			print_help();
+			exit(0);
 		}
 	}
 	return 0;
