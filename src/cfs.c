@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <ddcString.h>
 #include <ddcPrint.h>
+#include <ddcDef.h>
+#include <ddcPrint.h>
 
 #include "./utils.h"
 #include "../config.h"
@@ -10,7 +12,20 @@ long pkg_count = -1;
 
 void print_help(void)
 {
-	ddPrintf("HELP\n");
+	ddPrintf("cfs\n");
+	ddPrintf("usage: cfs -[options] package\n");
+	ddPrintf("options:\n");
+	ddPrintf("	f	-	fetch from sources\n");
+	ddPrintf("	d	-	download package\n");
+	ddPrintf("	c	-	compile package\n");
+	ddPrintf("	i	-	download + compile package\n");
+	ddPrintf("	u	-	update package\n");
+	ddPrintf("	r	-	remove package\n");
+	ddPrintf("	l	-	list packages\n");
+	ddPrintf("	L	-	list packages raw\n");
+	ddPrintf("	h	-	help\n");
+	ddPrintf("	h	-	help\n");
+	ddPrintf("docs: http://ddmo.xyz/projects/cfs/\n");
 }
 
 struct package get_package(ddString name)
@@ -49,6 +64,10 @@ ddString package_generate_command(struct package pkg, char* comm_list[10], int i
 			{
 				switch (com[i+1])
 				{
+					case 'x':
+					{
+						ddString_push_cstring_back(&output, prefix);
+					} break;
 					case 'p':
 					{
 						ddString_push_cstring_back(&output, programs_path);
@@ -147,35 +166,30 @@ void fetch_packages(void)
 				ddString v = make_ddString(path+4);
 				v.cstr[v.length-1] = 0;
 				pkgs[pkg_count].name = v.cstr;
-				//ddPrints(pkgs[pkg_count].name);
 			}
 			else if (cstring_compare_length("inst:", path, 5))
 			{
 				ddString v = make_ddString(path+5);
 				v.cstr[v.length-1] = 0;
 				pkgs[pkg_count].compile_commands[pkgs[pkg_count].compile_count++] = v.cstr;
-				//ddPrints(pkgs[pkg_count].compile_commands[pkgs[pkg_count].compile_count-1]);
 			}
 			else if (cstring_compare_length("up:", path, 3))
 			{
 				ddString v = make_ddString(path+3);
 				v.cstr[v.length-1] = 0;
 				pkgs[pkg_count].update_commands[pkgs[pkg_count].update_count++] = v.cstr;
-				//ddPrints(pkgs[pkg_count].download_commands[pkgs[pkg_count].download_count-1]);
 			}
 			else if (cstring_compare_length("dwl:", path, 4))
 			{
 				ddString v = make_ddString(path+4);
 				v.cstr[v.length-1] = 0;
 				pkgs[pkg_count].download_commands[pkgs[pkg_count].download_count++] = v.cstr;
-				//ddPrints(pkgs[pkg_count].download_commands[pkgs[pkg_count].download_count-1]);
 			}
 			else if (cstring_compare_length("rm:", path, 3))
 			{
 				ddString v = make_ddString(path+3);
 				v.cstr[v.length-1] = 0;
 				pkgs[pkg_count].remove_commands[pkgs[pkg_count].remove_count++] = v.cstr;
-				//ddPrints(pkgs[pkg_count].remove_commands[pkgs[pkg_count].remove_count-1]);
 			}
 		}
 		pclose(fp);
@@ -230,11 +244,28 @@ int main(int argc, char** argv)
 		{
 			package_remove(argc, argv);
 		}
+		else if (comms[j] == 'L')
+		{
+			for (int k = 0; k < pkg_count; k++)
+			{
+				struct package pkg = pkgs[k];
+				struct __pkg_data { int cnt; char* coms[10]; }*_pkg_data;
+				_pkg_data = (struct __pkg_data*)((char*)&pkg.download_count);
+				printf("%s\n", pkg.name);
+				for (int i = 0; i < 4; i++)
+				{
+					for (int l = 0; l < _pkg_data[i].cnt; l++)
+					{
+						printf("    %s\n", _pkg_data[i].coms[l]);
+					}
+				}
+			}
+		}
 		else if (comms[j] == 'l')
 		{
 			for (int k = 0; k < pkg_count; k++)
 			{
-				printf("%s\n", pkgs[k].name);
+				ddPrintf("%s\n", pkgs[k].name);
 			}
 		}
 		else if (comms[j] == 'h')
