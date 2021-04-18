@@ -1,4 +1,7 @@
+PREFIX=~/.local
 all:
 	gcc ./src/cfs.c -o ./cfs
 install:
-	cp ./cfs /usr/bin/
+	cp ./cfs $(PREFIX)/bin/
+uninstall:
+	rm $(PREFIX)/bin/cfs
